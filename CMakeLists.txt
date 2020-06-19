@@ -1,15 +1,24 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(gpd_ros)
 
+
+# add_compile_options(-O3 -fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-attributes)
+add_compile_options(-fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-attributes)
+set(CMAKE_CXX_STANDARD 14)
+
+
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS cmake_modules eigen_conversions message_generation roscpp rospy sensor_msgs std_msgs)
+find_package(catkin REQUIRED COMPONENTS cmake_modules eigen_conversions geometry_msgs message_generation message_runtime roscpp rospy sensor_msgs std_msgs)
 
 # PCL
 find_package(PCL REQUIRED)
-include_directories(${PCL_INCLUDE_DIRS})
-link_directories(${PCL_LIBRARY_DIRS})
+# find_package(Eigen3 REQUIRED)
+
+# include_directories(${PCL_INCLUDE_DIRS})
+# link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
 ## System dependencies are found with CMake's conventions
@@ -19,10 +28,15 @@ if (GPD_LIB)
 else()
   message(FATAL_ERROR "Library GPD not found")
 endif()
-include_directories(${GPD_LIB_INCLUDE_DIR})
-message(STATUS "gpd_include_dir: ${GPD_LIB_INCLUDE_DIR}")
 
-set(CMAKE_CXX_FLAGS "-O3 -fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-attributes -std=c++14")
+find_path(GPD_INCLUDE_DIRS NAMES gpd PATHS /usr/local/include NO_DEFAULT_PATH)
+if (GPD_INCLUDE_DIRS)
+	message(STATUS "Include directory GPD found in ${GPD_INCLUDE_DIRS}")
+else()
+  message(FATAL_ERROR "Include directory GPD not found")
+endif()
+
+
 
 ## Generate messages in the 'msg' folder
 add_message_files(FILES CloudIndexed.msg CloudSamples.msg CloudSources.msg GraspConfig.msg GraspConfigList.msg
@@ -57,37 +71,66 @@ DEPENDS PCL
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(include ${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
+include_directories(include
+ 										${catkin_INCLUDE_DIRS}
+										${PCL_INCLUDE_DIRS}
+										${GPD_LIB_INCLUDE_DIR}
+										)
+
 
 ## Declare a C++ library
-add_library(${PROJECT_NAME}_grasp_messages src/${PROJECT_NAME}/grasp_messages.cpp)
-add_dependencies(${PROJECT_NAME}_grasp_messages ${catkin_EXPORTED_TARGETS})
-add_library(${PROJECT_NAME}_grasp_plotter src/${PROJECT_NAME}/grasp_plotter.cpp)
+add_library(${PROJECT_NAME}
+ 							src/${PROJECT_NAME}/grasp_messages.cpp
+							src/${PROJECT_NAME}/grasp_plotter.cpp
+						)
+
+
+add_dependencies(${PROJECT_NAME}
+                 ${${PROJECT_NAME}_EXPORTED_TARGETS}
+								 ${catkin_EXPORTED_TARGETS}
+								 )
+
 
 ## Declare a C++ executable
-add_executable(${PROJECT_NAME}_detect_grasps src/gpd_ros/grasp_detection_node.cpp)
-add_executable(${PROJECT_NAME}_detect_grasps_server src/gpd_ros/grasp_detection_server.cpp)
+add_executable(detect_grasps src/${PROJECT_NAME}/grasp_detection_node.cpp)
+add_executable(detect_grasps_server src/${PROJECT_NAME}/grasp_detection_server.cpp)
 
-## Rename C++ executable without prefix
-set_target_properties(${PROJECT_NAME}_detect_grasps PROPERTIES OUTPUT_NAME detect_grasps PREFIX "")
-set_target_properties(${PROJECT_NAME}_detect_grasps_server PROPERTIES OUTPUT_NAME detect_grasps_server PREFIX "")
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}_detect_grasps
-                      ${PROJECT_NAME}_grasp_messages
-                      ${PROJECT_NAME}_grasp_plotter
-                      ${GPD_LIB}
-                      ${PCL_LIBRARIES}
-                      ${catkin_LIBRARIES})
-target_link_libraries(${PROJECT_NAME}_detect_grasps_server
-                      ${PROJECT_NAME}_grasp_messages
-                      ${PROJECT_NAME}_grasp_plotter
-                      ${GPD_LIB}
-                      ${PCL_LIBRARIES}
-                      ${catkin_LIBRARIES})
-target_link_libraries(${PROJECT_NAME}_grasp_plotter
-                      ${GPD_LIB}
-                      ${catkin_LIBRARIES})
-target_link_libraries(${PROJECT_NAME}_grasp_messages
-                      ${GPD_LIB}
-                      ${catkin_LIBRARIES})
+target_link_libraries(detect_grasps
+                      ${catkin_LIBRARIES}
+											${PROJECT_NAME}
+											${PCL_LIBRARIES}
+											${GPD_LIB}
+											)
+
+
+target_link_libraries(detect_grasps_server
+                      ${catkin_LIBRARIES}
+											${PROJECT_NAME}
+											${PCL_LIBRARIES}
+											${GPD_LIB}
+											)
+
+
+target_link_libraries(${PROJECT_NAME}
+                      ${catkin_LIBRARIES}
+											${GPD_LIB}
+											)
+
+
+
+install(TARGETS detect_grasps detect_grasps_server
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
