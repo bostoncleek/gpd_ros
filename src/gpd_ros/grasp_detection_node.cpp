@@ -40,6 +40,12 @@ GraspDetectionNode::GraspDetectionNode(ros::NodeHandle& node) : has_cloud_(false
   std::string rviz_topic;
   node.param("rviz_topic", rviz_topic, std::string("plot_grasps"));
 
+  ROS_INFO("Cloud Type: %d", cloud_type);
+  ROS_INFO("Cloud Topic: %s", cloud_topic.c_str());
+  ROS_INFO("Samples Topic: %s", samples_topic.c_str());
+  ROS_INFO("Rviz Topic: %s", rviz_topic.c_str());
+
+
   if (!rviz_topic.empty()) {
     grasps_rviz_pub_ = node.advertise<visualization_msgs::MarkerArray>(rviz_topic, 1);
     use_rviz_ = true;
