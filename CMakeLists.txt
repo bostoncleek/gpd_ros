@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0)
 project(gpd_ros)
 
 
@@ -7,19 +7,28 @@ add_compile_options(-fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-a
 set(CMAKE_CXX_STANDARD 14)
 
 
-
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS cmake_modules eigen_conversions geometry_msgs message_generation message_runtime roscpp rospy sensor_msgs std_msgs)
+find_package(catkin REQUIRED COMPONENTS
+							eigen_conversions
+							geometry_msgs
+							message_generation
+							message_runtime
+							roscpp
+							rospy
+							sensor_msgs
+							std_msgs)
+
 
 # PCL
 find_package(PCL REQUIRED)
-# find_package(Eigen3 REQUIRED)
-
-# include_directories(${PCL_INCLUDE_DIRS})
-# link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
+
+# Eigen
+# find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+
+
 
 ## System dependencies are found with CMake's conventions
 find_library(GPD_LIB NAMES gpd PATHS /usr/local/lib PATH_SUFFIXES lib NO_DEFAULT_PATH)
@@ -39,14 +48,25 @@ endif()
 
 
 ## Generate messages in the 'msg' folder
-add_message_files(FILES CloudIndexed.msg CloudSamples.msg CloudSources.msg GraspConfig.msg GraspConfigList.msg
-  SamplesMsg.msg)
+add_message_files(FILES
+                  CloudIndexed.msg
+									CloudSamples.msg
+									CloudSources.msg
+									GraspConfig.msg
+									GraspConfigList.msg
+  								SamplesMsg.msg
+									)
+
 
 ## Generate services in the 'srv' folder
 add_service_files(FILES detect_grasps.srv)
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
+generate_messages(DEPENDENCIES
+                  geometry_msgs
+									sensor_msgs
+									std_msgs
+									)
 
 ###################################
 ## catkin specific configuration ##
@@ -58,11 +78,16 @@ generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-INCLUDE_DIRS include
-CATKIN_DEPENDS cmake_modules eigen_conversions geometry_msgs message_runtime roscpp sensor_msgs std_msgs
-DEPENDS PCL
-# CATKIN_DEPENDS cmake_modules eigen_conversions geometry_msgs message_runtime roscpp sensor_msgs std_msgs
-# DEPENDS Eigen OpenCV PCL
+	INCLUDE_DIRS include
+	LIBRARIES ${PROJECT_NAME}
+	CATKIN_DEPENDS
+		eigen_conversions
+		geometry_msgs
+		message_runtime
+		roscpp
+		sensor_msgs
+		std_msgs
+	# DEPENDS PCL
 )
 
 ###########
@@ -97,6 +122,12 @@ add_executable(detect_grasps_server src/${PROJECT_NAME}/grasp_detection_server.c
 
 
 ## Specify libraries to link a library or executable target against
+target_link_libraries(${PROJECT_NAME}
+                      ${catkin_LIBRARIES}
+											${GPD_LIB}
+											)
+
+
 target_link_libraries(detect_grasps
                       ${catkin_LIBRARIES}
 											${PROJECT_NAME}
@@ -112,18 +143,9 @@ target_link_libraries(detect_grasps_server
 											${GPD_LIB}
 											)
 
-
-target_link_libraries(${PROJECT_NAME}
-                      ${catkin_LIBRARIES}
-											${GPD_LIB}
-											)
-
-
-
 install(TARGETS detect_grasps detect_grasps_server
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-
 
 install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
