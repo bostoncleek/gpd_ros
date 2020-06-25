@@ -91,6 +91,7 @@ void GraspDetectionNode::run()
 
       // Visualize the detected grasps in rviz.
       if (use_rviz_) {
+        ROS_INFO("Grasps drawn in frame: %s", frame_.c_str());
         rviz_plotter_->drawGrasps(grasps, frame_);
       }
 
@@ -180,6 +181,9 @@ void GraspDetectionNode::cloud_callback(const sensor_msgs::PointCloud2& msg)
 
     has_cloud_ = true;
     frame_ = msg.header.frame_id;
+    // ROS_INFO("frame_ %s", frame_.c_str());
+
+
   }
 }
 
