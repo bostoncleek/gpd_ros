@@ -20,6 +20,10 @@ gpd_ros::GraspConfig GraspMessages::convertToGraspMsg(const gpd::candidate::Hand
   tf::vectorEigenToMsg(hand.getApproach(), msg.approach);
   tf::vectorEigenToMsg(hand.getBinormal(), msg.binormal);
   tf::vectorEigenToMsg(hand.getAxis(), msg.axis);
+
+  Eigen::Quaterniond hand_quat(hand.getOrientation());
+  tf::quaternionEigenToMsg(hand_quat, msg.orientation);
+
   msg.width.data = hand.getGraspWidth();
   msg.score.data = hand.getScore();
   tf::pointEigenToMsg(hand.getSample(), msg.sample);

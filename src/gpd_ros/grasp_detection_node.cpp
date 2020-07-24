@@ -12,7 +12,6 @@ GraspDetectionNode::GraspDetectionNode(ros::NodeHandle& node) : has_cloud_(false
 {
   printf("Init ....\n");
   cloud_camera_ = NULL;
-
   // set camera viewpoint to default origin
 //  std::vector<double> camera_position;
 //  node.getParam("camera_position", camera_position);

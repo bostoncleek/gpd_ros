@@ -33,6 +33,7 @@
 #define GRASP_MESSAGES_H_
 
 #include <eigen_conversions/eigen_msg.h>
+#include <Eigen/Geometry>
 
 #include <gpd/candidate/hand.h>
 

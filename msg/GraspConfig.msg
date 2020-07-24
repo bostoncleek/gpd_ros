@@ -6,12 +6,14 @@
 geometry_msgs/Point position # grasp position (bottom/base center of robot hand)
 
 # Orientation represented as three axis (R = [approach binormal axis])
+geometry_msgs/Quaternion orientation
+
 geometry_msgs/Vector3 approach # grasp approach direction
 geometry_msgs/Vector3 binormal # hand closing direction
 geometry_msgs/Vector3 axis # hand axis
 
-std_msgs/Float32 width # Required aperture (opening width) of the robot hand
+std_msgs/Float64 width # Required aperture (opening width) of the robot hand
 
-std_msgs/Float32 score # Score assigned to the grasp by the classifier
+std_msgs/Float64 score # Score assigned to the grasp by the classifier
 
 geometry_msgs/Point sample # point at which the grasp was found
